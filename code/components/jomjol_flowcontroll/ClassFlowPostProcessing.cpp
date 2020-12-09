@@ -311,7 +311,14 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
     if (isanalog)
         ReturnRawValue = ReturnRawValue + analog; 
 
+    LogFile.WriteToFile("PostProcessing - RawValue:       " + ReturnRawValue);
+
+
     ReturnRawValue = ShiftDecimal(ReturnRawValue, DecimalShift);   
+
+    LogFile.WriteToFile("PostProcessing - DecimalShift:   " + ReturnRawValue);
+
+
 
     if (!PreValueUse || !PreValueOkay)
     {
@@ -329,27 +336,35 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
 
             PreValueOkay = true;
             PreValue = Value;
+
+            LogFile.WriteToFile("PostProcessing - PreValue:       " +  std::to_string(PreValue) + " - PreValue not okay");    
             
             SavePreValue(Value, zwtime);
         }
         return true;
     }
 
-    zw = ErsetzteN(ReturnRawValue); 
+    zw = ErsetzteN(ReturnRawValue);
+      
+    LogFile.WriteToFile("PostProcessing - ErsetzteN:      " + zw);         
 
     Value = std::stof(zw);
     if (checkDigitIncreaseConsistency)
     {
         Value = checkDigitConsistency(Value, DecimalShift, isanalog);
+        LogFile.WriteToFile("PostProcessing - CheckConsitency " + std::to_string(Value));        
     }
 
     zwvalue = RundeOutput(Value, AnzahlAnalog - DecimalShift);
+      
+    LogFile.WriteToFile("PostProcessing - RundeOutput     " + zwvalue);        
 
     if ((!AllowNegativeRates) && (Value < PreValue))
     {
         ErrorMessageText = ErrorMessageText + "Negative Rate - Returned old value - read value: " + zwvalue + " ";
         Value = PreValue;
         zwvalue = RundeOutput(Value, AnzahlAnalog - DecimalShift);
+        LogFile.WriteToFile("PostProcessing - ErrorNegRate " + zwvalue);  
     }
 
     if (useMaxRateValue && (abs(Value - PreValue) > MaxRateValue))
@@ -357,6 +372,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         ErrorMessageText = ErrorMessageText + "Rate too high - Returned old value - read value: " + zwvalue + " ";
         Value = PreValue;
         zwvalue = RundeOutput(Value, AnzahlAnalog - DecimalShift);
+        LogFile.WriteToFile("PostProcessing - MaxRate " + zwvalue); 
     }
 
     ReturnValueNoError = zwvalue;
@@ -367,7 +383,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
     if (ErrorMessageText.length() == 0)
     {
         PreValue = Value;
-        
+        LogFile.WriteToFile("PostProcessing - PreValue:       " + std::to_string(PreValue));            
         SavePreValue(Value, zwtime);
        
     }
